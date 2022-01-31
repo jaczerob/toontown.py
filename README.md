@@ -1,4 +1,4 @@
-# ttr.py
+# toontown.py
 A simple Python API wrapper for the Toontown Rewritten API (https://github.com/ToontownRewritten/api-doc/)
 
 ## Features
@@ -10,10 +10,10 @@ A simple Python API wrapper for the Toontown Rewritten API (https://github.com/T
 
 ```zsh
 # Linux/macOS
-python3 -m pip install -U ttr.py
+python3 -m pip install -U toontown.py
 
 # Windows
-py -3 -m pip install -U ttr.py
+py -3 -m pip install -U toontown.py
 ```
 
 ## Examples
@@ -21,10 +21,10 @@ py -3 -m pip install -U ttr.py
 ### Synchronous
 
 ```py
->>> import ttr
+>>> import toontown
 >>> 
 >>> 
->>> toontown = ttr.SyncToontownClient()
+>>> toontown = toontown.SyncToontownClient()
 >>> toontown.connect()
 >>> 
 >>> population = toontown.population()
@@ -39,9 +39,10 @@ py -3 -m pip install -U ttr.py
 ### Asynchronous / Context Manager
 
 ```py
->>> import ttr
+>>> import toontown
 >>> 
->>> async with ttr.AsyncToontownClient() as toontown:
+>>> 
+>>> async with toontown.AsyncToontownClient() as toontown:
 >>>     await toontown.field_offices()
 ```
 
