@@ -9,7 +9,7 @@ A basic wrapper for the Toontown Rewritten API
 
 """
 
-__title__ = 'ttr'
+__title__ = 'toontown'
 __author__ = 'jaczerob'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present jaczerob'

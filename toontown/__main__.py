@@ -1,9 +1,9 @@
-import ttr
-import ttr.models
+import toontown
+import toontown.models
 
 
 def main():
-    with ttr.SyncToontownClient() as client:
+    with toontown.SyncToontownClient() as client:
         print(client.doodles())
         print(client.field_offices())
         print(client.invasions())
