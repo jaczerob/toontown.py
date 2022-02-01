@@ -52,6 +52,9 @@ class FieldOffice:
     expiring : Optional[datetime]
         shows how long left the field office will stand after the last annex is defeated, otherwise `None`
     """
+
+    __slots__ = ['last_updated', 'street', 'department', 'difficulty',
+                 'annexes', 'open', 'expiring']
     
     def __init__(self, last_updated, zone, *, department, difficulty, annexes, open, expiring) -> None:
         self.last_updated: datetime = last_updated
@@ -74,6 +77,8 @@ class FieldOffices(BaseAPIModel):
     field_offices : List[FieldOffice]
         a list of all current field offices, reverse sorted by difficulty (stars)
     """
+
+    __slots__ = ['last_updated', 'field_offices']
     
     def __init__(self, **payload) -> None:
         last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))

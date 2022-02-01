@@ -20,6 +20,8 @@ class SillyTeam:
         set to `None` if the Silly Meter state is not set to `Reward`
     """
 
+    __slots__ = ['reward', 'description', 'points']
+
     def __init__(self, reward: str, description: str, points: Optional[int]) -> None:
         self.reward = reward
         self.description = description
@@ -55,6 +57,8 @@ class SillyMeter(BaseAPIModel):
     as_of : datetime
         when the server generated the Silly Meter data
     """
+
+    __slots__ = ['state', 'hp', 'silly_teams', 'winner', 'next_update_timestamp', 'as_of']
 
     def __init__(self, **payload: Dict[str, Any]) -> None:
         self.state: str = payload.get('state')

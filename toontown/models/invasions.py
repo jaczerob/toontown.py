@@ -55,6 +55,8 @@ class Invasions(BaseAPIModel):
     invasions : List[Invasion]
         the list of invasion data for each district
     """
+
+    __slots__ = ['last_updated', 'invasions']
     
     def __init__(self, **payload) -> None:
         self.last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
