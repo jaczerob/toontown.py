@@ -45,6 +45,3 @@ py -3 -m pip install -U toontown.py
 >>> async with toontown.AsyncToontownClient() as toontown:
 >>>     await toontown.field_offices()
 ```
-
-## TODO
-- Documentation
