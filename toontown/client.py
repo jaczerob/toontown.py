@@ -43,6 +43,8 @@ class BaseToontownClient(ABC):
 
 
 class SyncToontownClient(BaseToontownClient):
+    """Synchronous client to interact with the Toontown Rewritten API"""
+
     def __init__(self) -> None:
         super().__init__(SyncHTTPClient())
 
@@ -113,7 +115,12 @@ class SyncToontownClient(BaseToontownClient):
         return Population(**data)
 
     def silly_meter(self) -> None:
-        raise NotImplementedError
+        data = self.http.request(Route(
+            'GET',
+            '/sillymeter'
+        ))
+
+        return SillyMeter(**data)
 
     def __enter__(self):
         self.connect()
@@ -124,6 +131,8 @@ class SyncToontownClient(BaseToontownClient):
 
 
 class AsyncToontownClient(BaseToontownClient):
+    """Asynchronous client to interact with the Toontown Rewritten API"""
+
     def __init__(self) -> None:
         super().__init__(AsyncHTTPClient())
 
@@ -194,7 +203,12 @@ class AsyncToontownClient(BaseToontownClient):
         return Population(**data)
 
     async def silly_meter(self) -> None:
-        raise NotImplementedError
+        data = await self.http.request(Route(
+            'GET',
+            '/sillymeter'
+        ))
+
+        return SillyMeter(**data)
 
     async def __aenter__(self):
         await self.connect()

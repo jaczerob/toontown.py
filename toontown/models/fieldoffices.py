@@ -27,6 +27,32 @@ department_lookup = {
 
 
 class FieldOffice:
+    """Wrapper class for field office data
+    
+    Attributes
+    ----------
+    last_updated : datetime
+        when the field office's data was last updated
+
+    street : str
+        the street that the field office is on
+
+    department : str
+        the department of the field office (currently only `Sellbot`)
+
+    difficulty : int
+        how many stars the field office is
+
+    annexes : int
+        how many annexes are left in the field office
+
+    open : bool
+        whether or not the elevator to the field office is open
+
+    expiring : Optional[datetime]
+        shows how long left the field office will stand after the last annex is defeated, otherwise `None`
+    """
+    
     def __init__(self, last_updated, zone, *, department, difficulty, annexes, open, expiring) -> None:
         self.last_updated: datetime = last_updated
         self.street: str = zone_lookup[zone]
@@ -38,6 +64,17 @@ class FieldOffice:
 
 
 class FieldOffices(BaseAPIModel):
+    """"Wrapper class for /fieldoffices response
+
+    Attributes
+    ----------
+    last_updated : datetime
+        the time when the field offices data was last updated
+
+    field_offices : List[FieldOffice]
+        a list of all current field offices, reverse sorted by difficulty (stars)
+    """
+    
     def __init__(self, **payload) -> None:
         last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
         field_offices = payload.pop('fieldOffices')

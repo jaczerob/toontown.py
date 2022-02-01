@@ -1,7 +1,6 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from urllib.parse import quote
 from typing import (
     Any,
     Dict,
@@ -135,7 +134,3 @@ class AsyncHTTPClient(BaseHTTPClient):
                 if tries < 4 and e.errno in {54, 10054}:
                     await asyncio.sleep(1 + tries * 2)
                     continue
-
-
-if __name__ == '__main__':
-    AsyncHTTPClient()
