@@ -1,3 +1,5 @@
+"""TODO: Document (A)SyncToontownClient"""
+
 from abc import abstractmethod, ABC
 from typing import Optional
 
@@ -49,12 +51,18 @@ class SyncToontownClient(BaseToontownClient):
         super().__init__(SyncHTTPClient())
 
     def connect(self) -> None:
+        """Connect to the HTTP client
+        
+        Must be called before using any other methods in this class
+        """
         self.http.connect()
 
     def close(self) -> None:
+        """Closes connection to the HTTP client"""
         self.http.close()
 
     def doodles(self) -> Doodles:
+        """Request Doodle data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/doodles'
@@ -63,6 +71,7 @@ class SyncToontownClient(BaseToontownClient):
         return Doodles(**data)
 
     def field_offices(self) -> FieldOffices:
+        """Request Field Office data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/fieldoffices'
@@ -71,6 +80,7 @@ class SyncToontownClient(BaseToontownClient):
         return FieldOffices(**data)
 
     def invasions(self) -> Invasions:
+        """Request Invasion data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/invasions'
@@ -86,6 +96,26 @@ class SyncToontownClient(BaseToontownClient):
         response_token: Optional[str] = None,
         queue_token: Optional[str] = None,
     ) -> Login:
+        """Request to log into Toontown Rewritten's game server
+
+        Must provide a username and password, a response token, or a queue token
+        
+        Parameters
+        ----------
+        username : Optional[str] = None
+            optional username parameter, must also provide password if given
+
+        password : Optional[str] = None
+            optional password parameter, must also provide username if given
+
+        response_token : Optional[str] = None
+            optional response token parameter, obtained after initial login request with username and password 
+            if you are required to authenticate with ToonGuard
+
+        queue_token : Optional[str] = None
+            optional queue token parameter, obtained after intial login request with username and password or 
+            response token if you are required to wait in the login queue
+        """
         params = {'format': 'json'}
 
         if response_token is not None:
@@ -107,6 +137,7 @@ class SyncToontownClient(BaseToontownClient):
         return Login(**data)
 
     def population(self) -> Population:
+        """Request Population data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/population'
@@ -115,6 +146,7 @@ class SyncToontownClient(BaseToontownClient):
         return Population(**data)
 
     def silly_meter(self) -> None:
+        """Request Silly Meter data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/sillymeter'
@@ -137,12 +169,18 @@ class AsyncToontownClient(BaseToontownClient):
         super().__init__(AsyncHTTPClient())
 
     async def connect(self) -> None:
+        """Connect to the HTTP client
+        
+        Must be called before using any other methods in this class
+        """
         await self.http.connect()
 
     async def close(self) -> None:
+        """Closes connection to the HTTP client"""
         await self.http.close()
 
     async def doodles(self) -> Doodles:
+        """Request Doodle data from the Toontown Rewritten API"""
         data = await self.http.request(Route(
             'GET',
             '/doodles'
@@ -151,6 +189,7 @@ class AsyncToontownClient(BaseToontownClient):
         return Doodles(**data)
 
     async def field_offices(self) -> FieldOffices:
+        """Request Field Office data from the Toontown Rewritten API"""
         data = await self.http.request(Route(
             'GET',
             '/fieldoffices'
@@ -159,6 +198,7 @@ class AsyncToontownClient(BaseToontownClient):
         return FieldOffices(**data)
 
     async def invasions(self) -> Invasions:
+        """Request Invasion data from the Toontown Rewritten API"""
         data = self.http.request(Route(
             'GET',
             '/invasions'
@@ -174,6 +214,26 @@ class AsyncToontownClient(BaseToontownClient):
         response_token: Optional[str] = None,
         queue_token: Optional[str] = None,
     ) -> Login:
+        """Request to log into Toontown Rewritten's game server
+
+        Must provide a username and password, a response token, or a queue token
+        
+        Parameters
+        ----------
+        username : Optional[str] = None
+            optional username parameter, must also provide password if given
+
+        password : Optional[str] = None
+            optional password parameter, must also provide username if given
+
+        response_token : Optional[str] = None
+            optional response token parameter, obtained after initial login request with username and password 
+            if you are required to authenticate with ToonGuard
+
+        queue_token : Optional[str] = None
+            optional queue token parameter, obtained after intial login request with username and password or 
+            response token if you are required to wait in the login queue
+        """
         params = {'format': 'json'}
 
         if response_token is not None:
@@ -195,6 +255,7 @@ class AsyncToontownClient(BaseToontownClient):
         return Login(**data)
 
     async def population(self) -> Population:
+        """Request Population data from the Toontown Rewritten API"""
         data = await self.http.request(Route(
             'GET',
             '/population'
@@ -203,6 +264,7 @@ class AsyncToontownClient(BaseToontownClient):
         return Population(**data)
 
     async def silly_meter(self) -> None:
+        """Request Silly Meter data from the Toontown Rewritten API"""
         data = await self.http.request(Route(
             'GET',
             '/sillymeter'

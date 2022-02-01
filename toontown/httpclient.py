@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import time
 from abc import ABC, abstractmethod
 from typing import (
@@ -9,8 +10,13 @@ from typing import (
 
 import aiohttp
 import requests
+import requests.exceptions
 
 from . import config
+from .exceptions import *
+
+
+logger = logging.getLogger(__name__)
 
 
 Session = Union[aiohttp.ClientSession, requests.Session]
@@ -70,7 +76,7 @@ class SyncHTTPClient(BaseHTTPClient):
 
     def request(self, route: Route) -> Any:
         if self.is_closed:
-            raise Exception('HTTPClient not connected')
+            raise SessionNotConnected
 
         method = route.method
         url = route.url
@@ -79,7 +85,11 @@ class SyncHTTPClient(BaseHTTPClient):
 
         for tries in range(5):
             try:
+                logger.info('Attempting {0} request #{1}: {2}'.format(method, tries+1, url))
+
                 with self._session.request(method, url, params=params, headers=headers) as response:
+                    response.raise_for_status()
+
                     data = response.json()
                     status = response.status_code
 
@@ -90,11 +100,18 @@ class SyncHTTPClient(BaseHTTPClient):
                         time.sleep(1 + tries * 2)
                         continue
 
-                    response.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                message = str(e)
+                exc_info = type(e), e, e.__traceback__
+                logger.error(message, exc_info=exc_info)
+
             except OSError as e:
                 if tries < 4 and e.errno in {54, 10054}:
                     time.sleep(1 + tries * 2)
                     continue
+
+                logger.info('Exhausted attempts for {0} request: {1}'.format(method, url))
+                raise
 
 
 class AsyncHTTPClient(BaseHTTPClient):
@@ -102,14 +119,14 @@ class AsyncHTTPClient(BaseHTTPClient):
         self._session: aiohttp.ClientSession = None
 
     async def connect(self) -> None:
-        self._session = aiohttp.ClientSession()
+        self._session = aiohttp.ClientSession(raise_for_status=True)
 
     async def close(self) -> None:
         self._session.close()
 
     async def request(self, route: Route) -> Any:
         if self._session.closed:
-            raise Exception('HTTPClient not connected')
+            raise SessionNotConnected
 
         method = route.method
         url = route.url
@@ -118,6 +135,8 @@ class AsyncHTTPClient(BaseHTTPClient):
 
         for tries in range(5):
             try:
+                logger.info('Attempting {0} request #{1}: {2}'.format(method, tries+1, url))
+
                 async with self._session.request(method, url, params=params, headers=headers) as response:
                     data = await response.json()
                     status = response.status
@@ -129,8 +148,14 @@ class AsyncHTTPClient(BaseHTTPClient):
                         await asyncio.sleep(1 + tries * 2)
                         continue
 
-                    response.raise_for_status()
+            except aiohttp.ClientResponseError as e:
+                message = str(e)
+                exc_info = type(e), e, e.__traceback__
+                logger.error(message, exc_info=exc_info)
+                raise
+
             except OSError as e:
                 if tries < 4 and e.errno in {54, 10054}:
                     await asyncio.sleep(1 + tries * 2)
                     continue
+                raise
