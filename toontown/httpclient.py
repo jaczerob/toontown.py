@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import (
     Any,
     Dict,
+    List,
+    Tuple,
     Union
 )
 
@@ -71,6 +73,30 @@ class BaseHTTPClient(ABC):
 
     @abstractmethod
     def update(self, path: Union[str, Path]) -> None: ...
+
+    def get_outdated_files(self, manifest: Dict[str, Any], path: Path) -> List[Tuple[str, Path]]:
+        files = []
+
+        for file in manifest:
+            if sys.platform not in manifest[file]['only']:
+                continue
+
+            file_path: Path = path / file
+            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
+
+            if not file_path.exists():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+                continue
+
+            hash_alg = hashlib.sha1()
+            hash_alg.update(file_path.open('rb').read())
+
+            if manifest[file]['hash'] != hash_alg.hexdigest():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+
+        return files
 
 
 class SyncHTTPClient(BaseHTTPClient):
@@ -145,26 +171,7 @@ class SyncHTTPClient(BaseHTTPClient):
             headers=BASE_HEADERS,
         ).json()
 
-        files = []
-
-        for file in manifest:
-            if sys.platform not in manifest[file]['only']:
-                continue
-
-            file_path: Path = path / file
-            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
-
-            if not file_path.exists():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
-                continue
-
-            hash_alg = hashlib.sha1()
-            hash_alg.update(file_path.open('rb').read())
-
-            if manifest[file]['hash'] != hash_alg.hexdigest():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
+        files = self.get_outdated_files(manifest, path)
 
         def download(args):
             url, file_path = args
@@ -234,33 +241,12 @@ class AsyncHTTPClient(BaseHTTPClient):
         if not path.is_dir():
             raise Exception('Path does not exist or is not a directory')
 
-        manifest = await self._session.get(
+        manifest = await (await self._session.get(
             MANIFEST,
             headers=BASE_HEADERS,
-        )
+        )).json()
 
-        manifest = await manifest.json()
-
-        files = []
-
-        for file in manifest:
-            if sys.platform not in manifest[file]['only']:
-                continue
-
-            file_path: Path = path / file
-            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
-
-            if not file_path.exists():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
-                continue
-
-            hash_alg = hashlib.sha1()
-            hash_alg.update(file_path.open('rb').read())
-
-            if manifest[file]['hash'] != hash_alg.hexdigest():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
+        files = self.get_outdated_files(manifest, path)
 
         async def download(args):
             url, file_path = args
