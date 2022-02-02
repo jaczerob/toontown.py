@@ -1,7 +1,13 @@
 import asyncio
+import bz2
+import hashlib
 import logging
+from multiprocessing.pool import ThreadPool
+import os
+import sys
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import (
     Any,
     Dict,
@@ -21,9 +27,14 @@ logger = logging.getLogger(__name__)
 
 Session = Union[aiohttp.ClientSession, requests.Session]
 
-BASE: str = config.get('http', 'base')
+BASE: str = config.get('http', 'urls', 'base')
 BASE_HEADERS: Dict[str, Any] = config.get('http', 'base_headers')
 LOGIN_HEADERS: Dict[str, Any] = config.get('http', 'login_headers')
+
+MANIFEST: str = config.get('http', 'urls', 'manifest')
+PATCHES: str = config.get('http', 'urls', 'patches')
+
+CHUNK_SIZE: int = config.get('http', 'chunk_size')
 
 
 class Route:
@@ -51,6 +62,9 @@ class BaseHTTPClient(ABC):
 
     @abstractmethod
     def request(self, route: Route) -> Any: ...
+
+    @abstractmethod
+    def update(self, path: Union[str, Path]) -> None: ...
 
 
 class SyncHTTPClient(BaseHTTPClient):
@@ -113,6 +127,53 @@ class SyncHTTPClient(BaseHTTPClient):
                 logger.info('Exhausted attempts for {0} request: {1}'.format(method, url))
                 raise
 
+    def update(self, path: Union[str, Path]) -> None:
+        if isinstance(path, str):
+            path = Path(path)
+
+        if not path.is_dir():
+            raise Exception('Path does not exist or is not a directory')
+
+        manifest = self._session.get(
+            MANIFEST,
+            headers=BASE_HEADERS,
+        ).json()
+
+        files = []
+
+        for file in manifest:
+            if sys.platform not in manifest[file]['only']:
+                continue
+
+            file_path: Path = path / file
+            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
+
+            if not file_path.exists():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+                continue
+
+            hash_alg = hashlib.sha1()
+            hash_alg.update(file_path.open('rb').read())
+
+            if manifest[file]['hash'] != hash_alg.hexdigest():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+
+        def download(args):
+            url, file_path = args
+            with self._session.get(url, stream=True) as resp:
+                logger.info(f'Downloading {url} to {file_path}')
+                resp.raise_for_status()
+                decompressor = bz2.BZ2Decompressor()
+
+                with open(file_path, 'wb') as file:
+                    for chunk in resp.iter_content(chunk_size=CHUNK_SIZE):
+                        file.write(decompressor.decompress(chunk))
+
+        with ThreadPool(os.cpu_count()) as pool:
+            pool.map(download, files)
+
 
 class AsyncHTTPClient(BaseHTTPClient):
     def __init__(self) -> None:
@@ -122,7 +183,7 @@ class AsyncHTTPClient(BaseHTTPClient):
         self._session = aiohttp.ClientSession(raise_for_status=True)
 
     async def close(self) -> None:
-        self._session.close()
+        await self._session.close()
 
     async def request(self, route: Route) -> Any:
         if self._session.closed:
@@ -159,3 +220,53 @@ class AsyncHTTPClient(BaseHTTPClient):
                     await asyncio.sleep(1 + tries * 2)
                     continue
                 raise
+
+    async def update(self, path: Union[str, Path]) -> None:
+        if isinstance(path, str):
+            path = Path(path)
+
+        if not path.is_dir():
+            raise Exception('Path does not exist or is not a directory')
+
+        manifest = await self._session.get(
+            MANIFEST,
+            headers=BASE_HEADERS,
+        )
+
+        manifest = await manifest.json()
+
+        files = []
+
+        for file in manifest:
+            if sys.platform not in manifest[file]['only']:
+                continue
+
+            file_path: Path = path / file
+            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
+
+            if not file_path.exists():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+                continue
+
+            hash_alg = hashlib.sha1()
+            hash_alg.update(file_path.open('rb').read())
+
+            if manifest[file]['hash'] != hash_alg.hexdigest():
+                files.append((url, file_path))
+                logger.info(f'Queuing {file} for download')
+
+        async def download(args):
+            url, file_path = args
+
+            async with self._session.get(url) as resp:
+                logger.info(f'Downloading {url} to {file_path}')
+
+                resp.raise_for_status()
+                decompressor = bz2.BZ2Decompressor()
+
+                with open(file_path, 'wb') as file:
+                    async for chunk in resp.content.iter_chunked(CHUNK_SIZE):
+                        file.write(decompressor.decompress(chunk))
+
+        await asyncio.gather(*map(download, files))

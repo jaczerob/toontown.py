@@ -1,7 +1,8 @@
 """TODO: Document (A)SyncToontownClient"""
 
 from abc import abstractmethod, ABC
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 from .models import *
 from .httpclient import BaseHTTPClient, SyncHTTPClient, AsyncHTTPClient, Route
@@ -154,6 +155,10 @@ class SyncToontownClient(BaseToontownClient):
 
         return SillyMeter(**data)
 
+    def update(self, path: Union[str, Path]) -> None:
+        """Update Toontown Rewritten at the given `path`"""
+        self.http.update(path)
+
     def __enter__(self):
         self.connect()
         return self
@@ -271,6 +276,10 @@ class AsyncToontownClient(BaseToontownClient):
         ))
 
         return SillyMeter(**data)
+
+    async def update(self, path: Union[str, Path]) -> None:
+        """Update Toontown Rewritten at the given `path`"""
+        await self.http.update(path)
 
     async def __aenter__(self):
         await self.connect()
