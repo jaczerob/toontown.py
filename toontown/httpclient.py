@@ -18,7 +18,6 @@ import aiohttp
 import requests
 import requests.exceptions
 
-from . import config
 from .exceptions import *
 
 
@@ -27,14 +26,21 @@ logger = logging.getLogger(__name__)
 
 Session = Union[aiohttp.ClientSession, requests.Session]
 
-BASE: str = config.get('http', 'urls', 'base')
-BASE_HEADERS: Dict[str, Any] = config.get('http', 'base_headers')
-LOGIN_HEADERS: Dict[str, Any] = config.get('http', 'login_headers')
+BASE = 'https://www.toontownrewritten.com/api'
+BASE_HEADERS = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'toontown.py (https://github.com/jaczerob/toontown.py)'
+}
 
-MANIFEST: str = config.get('http', 'urls', 'manifest')
-PATCHES: str = config.get('http', 'urls', 'patches')
+LOGIN_HEADERS = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'User-Agent': 'toontown.py (https://github.com/jaczerob/toontown.py)'
+}
 
-CHUNK_SIZE: int = config.get('http', 'chunk_size')
+MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
+PATCHES = 'https://download.toontownrewritten.com/patches'
+
+CHUNK_SIZE = 10 * 10 * 1024
 
 
 class Route:
