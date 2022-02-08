@@ -2,11 +2,12 @@ import asyncio
 import bz2
 import hashlib
 import logging
-from multiprocessing.pool import ThreadPool
 import os
+import platform
 import sys
 import time
 from abc import ABC, abstractmethod
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import (
     Any,
@@ -45,6 +46,12 @@ PATCHES = 'https://download.toontownrewritten.com/patches'
 CHUNK_SIZE = 10 * 10 * 1024
 
 
+def get_platform():
+    if sys.platform == 'win32' and platform.machine().endswith('64'):
+        return 'win64'
+    return sys.platform
+
+
 class Route:
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.method = method
@@ -76,9 +83,10 @@ class BaseHTTPClient(ABC):
 
     def get_outdated_files(self, manifest: Dict[str, Any], path: Path) -> List[Tuple[str, Path]]:
         files = []
+        pf = get_platform()
 
         for file in manifest:
-            if sys.platform not in manifest[file]['only']:
+            if pf not in manifest[file]['only']:
                 continue
 
             file_path: Path = path / file
