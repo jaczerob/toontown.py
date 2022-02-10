@@ -12,7 +12,7 @@ __title__ = 'toontown'
 __author__ = 'jaczerob'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present jaczerob'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
