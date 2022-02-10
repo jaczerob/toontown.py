@@ -222,7 +222,8 @@ class AsyncToontownClient(BaseToontownClient):
         *, 
         username: Optional[str] = None, 
         password: Optional[str] = None,
-        response_token: Optional[str] = None,
+        app_token: Optional[str] = None,
+        auth_token: Optional[str] = None,
         queue_token: Optional[str] = None,
     ) -> Login:
         """Request to log into Toontown Rewritten's game server
@@ -237,9 +238,13 @@ class AsyncToontownClient(BaseToontownClient):
         password : Optional[str] = None
             optional password parameter, must also provide username if given
 
-        response_token : Optional[str] = None
-            optional response token parameter, obtained after initial login request with username and password 
-            if you are required to authenticate with ToonGuard
+        app_token : Optional[str] = None
+            optional app token parameter, obtained from e-mail regarding ToonGuard authentication, must also
+            provide auth_token if given
+
+        auth_token : Optional[str] = None
+            optional auth token parameter, obtained after initial login request with username and password 
+            if you are required to authenticate with ToonGuard, must also provide app_token if given
 
         queue_token : Optional[str] = None
             optional queue token parameter, obtained after intial login request with username and password or 
@@ -247,15 +252,16 @@ class AsyncToontownClient(BaseToontownClient):
         """
         params = {'format': 'json'}
 
-        if response_token is not None:
-            params['responseToken'] = response_token
+        if app_token is not None and auth_token is not None:
+            params['appToken'] = app_token
+            params['authToken'] = auth_token
         elif queue_token is not None:
             params['queueToken'] = queue_token
         elif username is not None and password is not None:
             params['username'] = username
             params['password'] = password
         else:
-            raise Exception('Please provide either a username and password, a queue token, or a response token to log in')
+            raise Exception('Please provide either a username and password, a queue token, or a auth token and app token to log in')
 
         data = await self.http.request(Route(
             'POST',
