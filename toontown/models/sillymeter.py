@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from .base import BaseAPIModel
 
@@ -37,16 +37,15 @@ class SillyTeam:
 class SillyMeter(BaseAPIModel):
     """Wrapper class for /sillymeter response
 
+    A tuple-like class containing `SillyTeam` objects, sorted by points
+
     Attributes
     ----------
-    state : str
-        the current state of the Silly Meter (`Active`, `Reward`, `Inactive`)
+    state : Literal['Active', 'Reward', 'Inactive']
+        the current state of the Silly Meter
 
     hp : int
         the current HP of the Silly Meter (0 - 5,000,000)
-
-    silly_teams : List[Reward]
-        the list of `SillyTeam`s that are in the current Silly Meter
 
     winner : Optional[str]
         the winning Silly Team whose reward is currently active, otherwise `None`
@@ -58,17 +57,24 @@ class SillyMeter(BaseAPIModel):
         when the server generated the Silly Meter data
     """
 
-    __slots__ = ['state', 'hp', 'silly_teams', 'winner', 'next_update_timestamp', 'as_of']
+    __slots__ = ['state', 'hp', 'winner', 'next_update_timestamp', 'as_of']
 
     def __init__(self, **payload: Dict[str, Any]) -> None:
-        self.state: str = payload.get('state')
+        self.state: Literal['Active', 'Reward', 'Inactive'] = payload.get('state')
         self.hp: int = payload.get('hp')
-
-        rewards: List[str] = payload.get('rewards')
-        reward_descriptions: List[str] = payload.get('rewardDescriptions')
-        reward_points: List[Optional[int]] = payload.get('rewardPoints')
-        self.silly_teams: List[SillyTeam] = list(map(lambda args: SillyTeam(*args), zip(rewards, reward_descriptions, reward_points)))
 
         self.winner: Optional[str] = payload.get('winner')
         self.next_update_timestamp: datetime = datetime.fromtimestamp(payload.get('nextUpdateTimestamp'))
         self.as_of: datetime = datetime.fromtimestamp(payload.get('asOf'))
+
+        rewards: List[str] = payload.get('rewards')
+        reward_descriptions: List[str] = payload.get('rewardDescriptions')
+        reward_points: List[Optional[int]] = payload.get('rewardPoints')
+        iterable = map(lambda args: SillyTeam(*args), zip(rewards, reward_descriptions, reward_points))
+
+        if self.state == 'Reward':
+            iterable = tuple(sorted(iterable, key=lambda silly_team: silly_team.points))
+        else:
+            iterable = tuple(iterable)
+
+        super().__init__(iterable)

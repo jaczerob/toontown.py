@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterator, List, Optional
+from typing import Optional
 
 from .base import BaseAPIModel
 
@@ -69,30 +69,25 @@ class FieldOffice:
 class FieldOffices(BaseAPIModel):
     """"Wrapper class for /fieldoffices response
 
+    A tuple-like class containing `FieldOffice` objects, sorted by difficulty
+
     Attributes
     ----------
     last_updated : datetime
         the time when the field offices data was last updated
-
-    field_offices : List[FieldOffice]
-        a list of all current field offices, reverse sorted by difficulty (stars)
     """
 
-    __slots__ = ['last_updated', 'field_offices']
+    __slots__ = ['last_updated']
     
     def __init__(self, **payload) -> None:
-        last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
-        field_offices = payload.pop('fieldOffices')
-
-        self.last_updated = last_updated
-        self.field_offices: List[FieldOffice] = sorted(
-            [FieldOffice(last_updated, zone, **props) for zone, props in field_offices.items()],
-            key=lambda x: x.difficulty,
-            reverse=True,
+        self.last_updated = last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
+        iterable = tuple(
+            sorted([
+                FieldOffice(last_updated, zone, **props)
+                for zone, props in payload.pop('fieldOffices').items()
+            ],
+            key=lambda field_office: field_office.difficulty,
+            reverse=True)
         )
 
-    def __iter__(self) -> Iterator[FieldOffice]:
-        return self.field_offices.__iter__()
-
-    def __next__(self):
-        return next(self.field_offices)
+        super().__init__(iterable)

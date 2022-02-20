@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from .base import BaseAPIModel
 
@@ -30,6 +29,9 @@ class Invasion:
     is_mega_invasion : bool
         whether or not this is a mega invasion
     """
+
+    __slots__ = ['district', 'as_of', 'type', 'progress', 'total', 'is_mega_invasion']
+
     def __init__(self, district, **payload) -> None:
         self.district: str = district
         self.as_of = datetime.fromtimestamp(payload.pop('asOf'))
@@ -38,28 +40,25 @@ class Invasion:
         progress, total = payload.pop('progress').split('/')
         self.progress = int(progress)
         self.total = int(total)
-
-    @property
-    def is_mega_invasion(self) -> bool:
-        return self.total == 1000000
+        self.is_mega_invasion: bool = total == 1000000
 
 
 class Invasions(BaseAPIModel):
     """"Wrapper class for /invasions response
 
+    A tuple-like class containing `Invasion` objects
+
     Attributes
     ----------
     last_updated : datetime
         the time when the invasions were last updated
-
-    invasions : List[Invasion]
-        the list of invasion data for each district
     """
 
-    __slots__ = ['last_updated', 'invasions']
+    __slots__ = ['last_updated']
     
     def __init__(self, **payload) -> None:
+        iterable = tuple(Invasion(**{'district': key} | item) for key, item in payload.pop('invasions').items())
+        super().__init__(iterable)
+
         self.last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
         
-        invasions = payload.pop('invasions')
-        self.invasions: List[Invasion] = [Invasion(district, **props) for district, props in invasions.items()]

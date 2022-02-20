@@ -16,32 +16,16 @@ python3 -m pip install -U toontown.py
 py -3 -m pip install -U toontown.py
 ```
 
-## Examples
+## About
 
-### Synchronous
+All methods return a tuple-like wrapper class with all the response data wrapped in objects
 
-```py
->>> import toontown
->>> 
->>> 
->>> toontown = toontown.SyncToontownClient()
->>> toontown.connect()
->>> 
->>> population = toontown.population()
->>> population.total  # Random output
-1562
->>> for district, district_population in population.districts():
->>>     print(f'{district} population: {district_population}')
-... 
->>> toontown.close()
-```
-
-### Asynchronous / Context Manager
+e.g. This will print all the current doodles in Toontown Rewritten
 
 ```py
->>> import toontown
->>> 
->>> 
->>> async with toontown.AsyncToontownClient() as toontown:
->>>     await toontown.field_offices()
+async with toontown.AsyncToontownClient() as client:
+    doodles = await client.doodles()
+
+    for doodle in doodles:
+        print(doodle.district, doodle.playground, doodle.dna, doodle.rendition, doodle.traits, doodle.cost)
 ```

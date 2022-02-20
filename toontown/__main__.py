@@ -1,5 +1,4 @@
 import asyncio
-from pathlib import Path
 
 import toontown
 import toontown.models
@@ -7,7 +6,10 @@ import toontown.models
 
 async def main():
     async with toontown.AsyncToontownClient() as client:
-        await client.update(Path('/Users/imac/Library/Application Support/Toontown Rewritten'))
+        doodles = await client.doodles()
+
+        for doodle in doodles:
+            print(doodle.district, doodle.playground, doodle.dna, doodle.rendition, doodle.traits, doodle.cost)
 
 
 asyncio.run(main())

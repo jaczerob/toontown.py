@@ -1,105 +1,49 @@
-from dataclasses import dataclass
+from typing import Literal, Optional
 
 from .base import BaseAPIModel
 
 
-__all__ = ['Login', 'FailedLogin', 'PartialLogin', 'DelayedLogin', 'SuccessfulLogin']
+__all__ = ['Login']
 
 
 class Login(BaseAPIModel):
     """"Wrapper class for /login response
-
-    Returns
-    -------
-    SuccessfulLogin
-        you can now log into Toontown Rewritten with the provided gameserver and cookie
-
-    DelayedLogin
-        you are in the login queue and must poll again with the given queueToken
-
-    FailedLogin
-        your account is either not verified or is disabled
-
-    PartialLogin
-        your account must be authenticated with ToonGuard
-    """
-    
-    def __new__(cls, *args, **kwargs):
-        super().__new__(cls, *args, **kwargs)
-        
-        success = kwargs.get('success')
-        if success == 'true':
-            return SuccessfulLogin(kwargs.get('gameserver'), kwargs.get('cookie'))
-        elif success == 'delayed':
-            return DelayedLogin(kwargs.get('eta'), kwargs.get('position'), kwargs.get('queueToken'))
-
-        banner = kwargs.get('banner')
-
-        if success == 'false':
-            return FailedLogin(banner)
-        elif success == 'partial':
-            return PartialLogin(banner, kwargs.get('responseToken'))
-
-
-@dataclass
-class FailedLogin:
-    """Login response if your account was not verified or was disabled
     
     Attributes
     ----------
-    banner : str
-        the server's response to why the login was failed
+    success : Literal['false', 'partial', 'true', 'delayed']
+        what type of response the login gave
+
+    banner : Optional[str]
+        an optional reason from the server if `false` or `partial` was given for success
+
+    response_token : Optional[str]
+        if success is `partial`, a token to verify a ToonGuard response to the server
+
+    gameserver : Optional[str]
+        if success is `true`, Toontown Rewritten's gameserver IP
+
+    cookie : Optional[str]
+        if success is `true`, your Toontown Rewritten session identifier
+
+    eta : Optional[int]
+        if success is `delayed`, how many seconds you are estimated to be able to play
+
+    position : Optional[int]
+        if success is `delayed`, how many toons are ahead of you in queue
+
+    queue_token : Optional[str]
+        if success is `delayed`, this identifier holds your position in queue
     """
-    banner: str
 
+    __slots__ = ['success', 'banner', 'response_token', 'gameserver', 'cookie', 'eta', 'position', 'queue_token']
 
-@dataclass
-class PartialLogin:
-    """Login response if your account needs to be authenticated with ToonGuard
-    
-    Attributes
-    ----------
-    banner : str
-        the server's response to why the login is partial
-
-    response_token : str
-        the token to verify that the ToonGuard code was sent by you    
-    """
-    banner: str
-    response_token: str
-
-
-@dataclass
-class DelayedLogin:
-    """Login response if you are in a queue to log in
-    
-    Attributes
-    ----------
-    eta : int
-        the estimated time in seconds of when you can expect to log in
-        
-    position : int
-        your position in the queue
-        
-    queue_token : str
-        the token given in the initial delayed response to update your position in the queue
-    """
-    eta: int
-    position: int
-    queue_token: str
-
-
-@dataclass
-class SuccessfulLogin:
-    """Login response if you are successfully logged into Toontown Rewritten
-    
-    Attributes
-    ----------
-    gameserver : str
-        Toontown Rewritten's server host used to connect to the game server
-        
-    cookie : str
-        your unique identifier for your current session, DO NOT SHARE
-    """
-    gameserver: str
-    cookie: str
+    def __init__(self, **payload) -> None:
+        self.success: Literal['false', 'partial', 'true', 'delayed'] = payload.get('success')
+        self.banner: Optional[str] = payload.get('banner', None)
+        self.response_token: Optional[str] = payload.get('responseToken', None)
+        self.gameserver: Optional[str] = payload.get('gameserver', None)
+        self.cookie: Optional[str] = payload.get('cookie', None)
+        self.eta: Optional[int] = payload.get('eta', None)
+        self.position: Optional[int] = payload.get('position', None)
+        self.queue_token: Optional[str] = payload.get('queue_token', None)

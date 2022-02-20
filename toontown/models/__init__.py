@@ -5,3 +5,5 @@ from .invasions import *
 from .login import *
 from .population import *
 from .sillymeter import *
+from .news import *
+from .releasenotes import *
