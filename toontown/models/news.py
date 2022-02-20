@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Iterator, Optional
 
 from .base import BaseAPIModel
 
@@ -75,3 +75,12 @@ class NewsList(BaseAPIModel):
     def __init__(self, **payload) -> None:
         iterable = tuple(payload.get('iterable'))
         super().__init__(iterable)
+
+    def __getitem__(self, index: int) -> News:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[News]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> News:
+        return next(self._iterable)

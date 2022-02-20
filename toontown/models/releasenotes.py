@@ -1,11 +1,11 @@
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Iterator, Optional
 
 from .base import BaseAPIModel
 
 
-__all__ = ['ReleaseNote', 'ReleaseNotes']
+__all__ = ['ReleaseNotes', 'ReleaseNotesList']
 
 
 DATE_FMT = '%B %-d, %Y at %-I:%M %p'
@@ -26,7 +26,7 @@ def clean(string: Optional[str]):
     return string
 
 
-class ReleaseNote:
+class ReleaseNotes:
     """Wrapper class for the release note data
     
     Attributes
@@ -59,11 +59,20 @@ class ReleaseNote:
         self.body: Optional[str] = clean(body_raw)
 
 
-class ReleaseNotes(BaseAPIModel):
+class ReleaseNotesList(BaseAPIModel):
     """Wrapper class for the /releasenotes response
     
     A tuple-like class containing `ReleaseNote` objects
     """
     def __init__(self, **payload) -> None:
-        iterable: tuple[ReleaseNote] = tuple(payload.get('iterable'))
+        iterable: tuple[ReleaseNotes] = tuple(payload.get('iterable'))
         super().__init__(iterable)
+
+    def __getitem__(self, index: int) -> ReleaseNotes:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[ReleaseNotes]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> ReleaseNotes:
+        return next(self._iterable)

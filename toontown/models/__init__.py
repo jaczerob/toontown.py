@@ -7,3 +7,4 @@ from .population import *
 from .sillymeter import *
 from .news import *
 from .releasenotes import *
+from .status import *

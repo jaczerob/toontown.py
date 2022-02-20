@@ -1,12 +1,10 @@
 from typing import Literal, Optional
 
-from .base import BaseAPIModel
-
 
 __all__ = ['Login']
 
 
-class Login(BaseAPIModel):
+class Login:
     """"Wrapper class for /login response
     
     Attributes

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Iterator, List
 
 from .base import BaseAPIModel
 
@@ -57,3 +57,12 @@ class Doodles(BaseAPIModel):
         )
 
         super().__init__(iterable)
+
+    def __getitem__(self, index: int) -> Doodle:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[Doodle]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> Doodle:
+        return next(self._iterable)

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterator
 
 from .base import BaseAPIModel
 
@@ -61,4 +62,13 @@ class Invasions(BaseAPIModel):
         super().__init__(iterable)
 
         self.last_updated = datetime.fromtimestamp(payload.pop('lastUpdated'))
+
+    def __getitem__(self, index: int) -> Invasion:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[Invasion]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> Invasion:
+        return next(self._iterable)
         

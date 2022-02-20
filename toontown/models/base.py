@@ -1,4 +1,4 @@
-from typing import Any, Iterator, Optional, Tuple
+from typing import Any, Tuple
 
 from ..exceptions import FailedResponse
 
@@ -17,28 +17,13 @@ class BaseAPIModel:
         return instance
 
     def __init__(self, iterable: Tuple[Any]) -> None:
-        self.__iterable = iterable
-
-    def count(self, value: Any) -> int:
-        return self.__iterable.count(value)
-        
-    def index(self, value: Any, start: Optional[int] = None, stop: Optional[int] = None) -> int:
-        return self.__iterable.index(value, start, stop)
-
-    def __getitem__(self, index: int) -> Any:
-        return self.__iterable.__getitem__(index)
+        self._iterable = iterable
 
     def __len__(self) -> int:
-        return self.__iterable.__len__()
-
-    def __iter__(self) -> Iterator[Any]:
-        return self.__iterable.__iter__()
-
-    def __next__(self) -> Any:
-        return next(self.__iterable)
+        return self._iterable.__len__()
 
     def __str__(self) -> str:
-        return self.__iterable.__str__()
+        return self._iterable.__str__()
 
     def __repr__(self) -> str:
-        return self.__iterable.__str__()
+        return self._iterable.__str__()

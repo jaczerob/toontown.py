@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, Iterator, List, Literal, Optional
 
 from .base import BaseAPIModel
 
@@ -78,3 +78,12 @@ class SillyMeter(BaseAPIModel):
             iterable = tuple(iterable)
 
         super().__init__(iterable)
+
+    def __getitem__(self, index: int) -> SillyTeam:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[SillyTeam]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> SillyTeam:
+        return next(self._iterable)

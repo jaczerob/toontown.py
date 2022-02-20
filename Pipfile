@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 aiohttp = "==3.8.1"
 requests = "==2.27.1"
-PyYAML = "==6.0"
 
 [dev-packages]
 

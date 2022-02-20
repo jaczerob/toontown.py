@@ -77,8 +77,12 @@ class BaseToontownClient(ABC):
         """Request News data from the Toontown Rewritten API"""
 
     @abstractmethod
-    def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotes:
+    def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotesList:
         """Request Release Notes data from the Toontown Rewritten API"""
+
+    @abstractmethod
+    def status(self) -> Status:
+        """Request Status data from the Toontown Rewritten API"""
 
     @abstractmethod
     def update(self, path: Union[str, Path]) -> None:
@@ -97,7 +101,15 @@ class SyncToontownClient(BaseToontownClient):
     def close(self) -> None:
         self.http.close()
 
-    def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotes:
+    def status(self) -> Status:
+        data = self.http.request(Route(
+            'GET',
+            '/status'
+        ))
+
+        return Status(**data)
+
+    def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotesList:
         if id is not None:
             path = f'/releasenotes/{id}'
         else:
@@ -113,7 +125,7 @@ class SyncToontownClient(BaseToontownClient):
         else:
             data = dict(iterable=data)
 
-        return ReleaseNotes(**data)
+        return ReleaseNotesList(**data)
         
     def news(self, *, id: Optional[int] = None, all: Optional[bool] = False) -> NewsList:
         if id is not None:
@@ -228,7 +240,15 @@ class AsyncToontownClient(BaseToontownClient):
     async def close(self) -> None:
         await self.http.close()
 
-    async def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotes:
+    async def status(self) -> Status:
+        data = await self.http.request(Route(
+            'GET',
+            '/status'
+        ))
+
+        return Status(**data)
+
+    async def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotesList:
         if id is not None:
             path = f'/releasenotes/{id}'
         else:
@@ -244,7 +264,7 @@ class AsyncToontownClient(BaseToontownClient):
         else:
             data = dict(iterable=data)
 
-        return ReleaseNotes(**data)
+        return ReleaseNotesList(**data)
         
     async def news(self, *, id: Optional[int] = None, all: Optional[bool] = False) -> NewsList:
         if id is not None:

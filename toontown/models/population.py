@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Iterator
 
 from .base import BaseAPIModel
 
@@ -53,3 +54,12 @@ class Population(BaseAPIModel):
         ], key=lambda district: district.population))
         
         super().__init__(iterable)
+
+    def __getitem__(self, index: int) -> District:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[District]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> District:
+        return next(self._iterable)
