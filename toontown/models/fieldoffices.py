@@ -66,7 +66,7 @@ class FieldOffice:
         self.expiring: Optional[datetime] = datetime.fromtimestamp(expiring) if expiring else None
 
 
-class FieldOffices(BaseAPIModel):
+class FieldOffices(BaseAPIModel[FieldOffice]):
     """"Wrapper class for /fieldoffices response
 
     A tuple-like class containing `FieldOffice` objects, sorted by difficulty
@@ -91,12 +91,3 @@ class FieldOffices(BaseAPIModel):
         )
 
         super().__init__(iterable)
-
-    def __getitem__(self, index: int) -> FieldOffice:
-        return self._iterable.__getitem__(index)
-
-    def __iter__(self) -> Iterator[FieldOffice]:
-        return self._iterable.__iter__()
-
-    def __next__(self) -> FieldOffice:
-        return next(self._iterable)

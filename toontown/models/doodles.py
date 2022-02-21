@@ -41,13 +41,13 @@ class Doodle:
         self.cost: int = cost
 
 
-class Doodles(BaseAPIModel):
+class Doodles(BaseAPIModel[Doodle]):
     """Wrapper class for the /doodles response
     
     A tuple-like class containing `Doodle` objects, sorted by district and playground
     """
     def __init__(self, **payload) -> None:
-        iterable: tuple[Doodle] = tuple(
+        iterable = tuple(
             sorted([
                 Doodle(district, playground, **doodle)
                 for district, playgrounds in payload.items()
@@ -57,12 +57,3 @@ class Doodles(BaseAPIModel):
         )
 
         super().__init__(iterable)
-
-    def __getitem__(self, index: int) -> Doodle:
-        return self._iterable.__getitem__(index)
-
-    def __iter__(self) -> Iterator[Doodle]:
-        return self._iterable.__iter__()
-
-    def __next__(self) -> Doodle:
-        return next(self._iterable)

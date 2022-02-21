@@ -28,7 +28,7 @@ class District:
     last_updated: datetime
 
 
-class Population(BaseAPIModel):
+class Population(BaseAPIModel[District]):
     """"Wrapper class for /population response
 
     A tuple-like class containing `District` objects, sorted by population
@@ -54,12 +54,3 @@ class Population(BaseAPIModel):
         ], key=lambda district: district.population))
         
         super().__init__(iterable)
-
-    def __getitem__(self, index: int) -> District:
-        return self._iterable.__getitem__(index)
-
-    def __iter__(self) -> Iterator[District]:
-        return self._iterable.__iter__()
-
-    def __next__(self) -> District:
-        return next(self._iterable)

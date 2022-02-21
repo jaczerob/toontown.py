@@ -34,7 +34,7 @@ class SillyTeam:
         return self.__str__()
 
 
-class SillyMeter(BaseAPIModel):
+class SillyMeter(BaseAPIModel[SillyTeam]):
     """Wrapper class for /sillymeter response
 
     A tuple-like class containing `SillyTeam` objects, sorted by points
@@ -78,12 +78,3 @@ class SillyMeter(BaseAPIModel):
             iterable = tuple(iterable)
 
         super().__init__(iterable)
-
-    def __getitem__(self, index: int) -> SillyTeam:
-        return self._iterable.__getitem__(index)
-
-    def __iter__(self) -> Iterator[SillyTeam]:
-        return self._iterable.__iter__()
-
-    def __next__(self) -> SillyTeam:
-        return next(self._iterable)

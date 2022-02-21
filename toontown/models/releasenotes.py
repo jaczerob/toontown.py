@@ -59,20 +59,11 @@ class ReleaseNotes:
         self.body: Optional[str] = clean(body_raw)
 
 
-class ReleaseNotesList(BaseAPIModel):
+class ReleaseNotesList(BaseAPIModel[ReleaseNotes]):
     """Wrapper class for the /releasenotes response
     
     A tuple-like class containing `ReleaseNote` objects
     """
     def __init__(self, **payload) -> None:
-        iterable: tuple[ReleaseNotes] = tuple(payload.get('iterable'))
+        iterable = tuple(payload.get('iterable'))
         super().__init__(iterable)
-
-    def __getitem__(self, index: int) -> ReleaseNotes:
-        return self._iterable.__getitem__(index)
-
-    def __iter__(self) -> Iterator[ReleaseNotes]:
-        return self._iterable.__iter__()
-
-    def __next__(self) -> ReleaseNotes:
-        return next(self._iterable)

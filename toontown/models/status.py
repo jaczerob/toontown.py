@@ -10,5 +10,8 @@ class Status:
     open : bool
         whether or not Toontown Rewritten is open
     """
+    
+    __slots__ = ['open']
+
     def __init__(self, **payload) -> None:
         self.open: bool = payload.get('open', False)

@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any, Generic, Iterator, Tuple, TypeVar
 
 from ..exceptions import FailedResponse
 
@@ -6,7 +6,10 @@ from ..exceptions import FailedResponse
 __all__ = ['BaseAPIModel']
 
 
-class BaseAPIModel:
+T = TypeVar('T')
+
+
+class BaseAPIModel(Generic[T]):
     def __new__(cls, *args, **payload):
         instance = super().__new__(cls)
 
@@ -16,8 +19,17 @@ class BaseAPIModel:
             
         return instance
 
-    def __init__(self, iterable: Tuple[Any]) -> None:
+    def __init__(self, iterable: Tuple[T]) -> None:
         self._iterable = iterable
+
+    def __getitem__(self, index: int) -> T:
+        return self._iterable.__getitem__(index)
+
+    def __iter__(self) -> Iterator[T]:
+        return self._iterable.__iter__()
+
+    def __next__(self) -> T:
+        return next(self._iterable)
 
     def __len__(self) -> int:
         return self._iterable.__len__()
