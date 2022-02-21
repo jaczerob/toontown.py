@@ -13,6 +13,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Optional,
     Tuple,
     Union
 )
@@ -66,8 +67,8 @@ class Route:
 
 class BaseHTTPClient(ABC):
     @abstractmethod
-    def __init__(self) -> None:
-        self._session: Session = None
+    def __init__(self, *, session: Optional[Session] = None) -> None:
+        self._session = session
 
     @abstractmethod
     def connect(self) -> None: ...
@@ -108,8 +109,8 @@ class BaseHTTPClient(ABC):
 
 
 class SyncHTTPClient(BaseHTTPClient):
-    def __init__(self) -> None:
-        self._session: requests.Session = None
+    def __init__(self, *, session: Optional[requests.Session] = None) -> None:
+        self._session: requests.Session = session
         self._is_closed = True
 
     @property
@@ -121,7 +122,9 @@ class SyncHTTPClient(BaseHTTPClient):
         self._is_closed = bool(value)
 
     def connect(self) -> None:
-        self._session = requests.Session()
+        if self._session is None:
+            self._session = requests.Session()
+            
         self._is_closed = False
 
     def close(self) -> None:
@@ -197,11 +200,12 @@ class SyncHTTPClient(BaseHTTPClient):
 
 
 class AsyncHTTPClient(BaseHTTPClient):
-    def __init__(self) -> None:
-        self._session: aiohttp.ClientSession = None
+    def __init__(self, *, session: Optional[aiohttp.ClientSession] = None) -> None:
+        self._session: aiohttp.ClientSession = session
 
     async def connect(self) -> None:
-        self._session = aiohttp.ClientSession(raise_for_status=True)
+        if self._session is None:
+            self._session = aiohttp.ClientSession(raise_for_status=True)
 
     async def close(self) -> None:
         await self._session.close()

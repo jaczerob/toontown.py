@@ -1,3 +1,5 @@
+import aiohttp
+import requests
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Union
@@ -92,8 +94,8 @@ class BaseToontownClient(ABC):
 class SyncToontownClient(BaseToontownClient):
     """Synchronous client to interact with the Toontown Rewritten API"""
 
-    def __init__(self) -> None:
-        super().__init__(SyncHTTPClient())
+    def __init__(self, *, session: Optional[requests.Session] = None) -> None:
+        super().__init__(SyncHTTPClient(session=session))
 
     def connect(self) -> None:
         self.http.connect()
@@ -231,8 +233,8 @@ class SyncToontownClient(BaseToontownClient):
 class AsyncToontownClient(BaseToontownClient):
     """Asynchronous client to interact with the Toontown Rewritten API"""
 
-    def __init__(self) -> None:
-        super().__init__(AsyncHTTPClient())
+    def __init__(self, *, session: Optional[aiohttp.ClientSession] = None) -> None:
+        super().__init__(AsyncHTTPClient(session=session))
 
     async def connect(self) -> None:
         await self.http.connect()
