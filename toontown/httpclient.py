@@ -103,7 +103,7 @@ class BaseHTTPClient(ABC):
     @abstractmethod
     def update(self, path: Union[str, Path]) -> None: ...
 
-    def get_outdated_files(self, manifest: dict[str, Any], path: Path) -> list[Tuple[str, Path]]:
+    def get_outdated_files(self, manifest: dict[str, Any], path: Path) -> list[tuple[str, Path]]:
         pf = get_platform()
 
         return [
