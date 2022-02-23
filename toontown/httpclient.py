@@ -27,10 +27,7 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import (
     Any,
-    Dict,
-    List,
     Optional,
-    Tuple,
     Union
 )
 import asyncio
@@ -85,7 +82,7 @@ class Route:
         self.url = BASE + path
 
     @property
-    def headers(self) -> Dict[str, Any]:
+    def headers(self) -> dict[str, Any]:
         return LOGIN_HEADERS if self.path == '/login' else BASE_HEADERS
 
 
@@ -106,30 +103,18 @@ class BaseHTTPClient(ABC):
     @abstractmethod
     def update(self, path: Union[str, Path]) -> None: ...
 
-    def get_outdated_files(self, manifest: Dict[str, Any], path: Path) -> List[Tuple[str, Path]]:
-        files = []
+    def get_outdated_files(self, manifest: dict[str, Any], path: Path) -> list[Tuple[str, Path]]:
         pf = get_platform()
 
-        for file in manifest:
-            if pf not in manifest[file]['only']:
-                continue
-
-            file_path: Path = path / file
-            url = '{0}/{1}'.format(PATCHES, manifest[file]['dl'])
-
-            if not file_path.exists():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
-                continue
-
-            hash_alg = hashlib.sha1()
-            hash_alg.update(file_path.open('rb').read())
-
-            if manifest[file]['hash'] != hash_alg.hexdigest():
-                files.append((url, file_path))
-                logger.info(f'Queuing {file} for download')
-
-        return files
+        return [
+            ('{0}/{1}'.format(PATCHES, props['dl']), (path / file))
+            for file, props in manifest.items()
+            if pf not in props['only'] and\
+            (
+                not (path / file).exists() or\
+                props['hash'] != hashlib.sha1((path / file).open('rb').read()).hexdigest()
+            )
+        ]
 
 
 class SyncHTTPClient(BaseHTTPClient):

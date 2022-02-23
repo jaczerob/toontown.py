@@ -70,4 +70,4 @@ class Login:
         self.cookie: Optional[str] = payload.get('cookie', None)
         self.eta: Optional[int] = payload.get('eta', None)
         self.position: Optional[int] = payload.get('position', None)
-        self.queue_token: Optional[str] = payload.get('queue_token', None)
+        self.queue_token: Optional[str] = payload.get('queueToken', None)
