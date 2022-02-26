@@ -7,7 +7,11 @@ readme = (HERE / 'README.md').read_text()
 
 packages = [
     'toontown',
-    'toontown.models'
+    'toontown.client',
+    'toontown.http',
+    'toontown.models',
+    'toontown.models.clash',
+    'toontown.models.rewritten'
 ]
 
 
