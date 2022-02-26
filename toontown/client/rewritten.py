@@ -22,119 +22,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Union
 import aiohttp
 import requests
 
-from .models import *
-from .httpclient import BaseHTTPClient, SyncHTTPClient, AsyncHTTPClient, Route
+from ..http import RewrittenSyncHTTPClient, RewrittenAsyncHTTPClient
+from ..models.rewritten import *
+from .base import BaseAsyncToontownClient, BaseSyncToontownClient
 
 
-class BaseToontownClient(ABC):
-    """Base Toontown Client to provide functionality for users to interact with the Toontown Rewritten API"""
-
-    @abstractmethod
-    def __init__(self, httpclient: BaseHTTPClient) -> None:
-        self.http = httpclient
-
-    @abstractmethod
-    def connect(self) -> None:
-        """Connect to the HTTP client
-        
-        Must be called before using any other methods in this class
-        """
-
-    @abstractmethod
-    def close(self) -> None:
-        """Closes connection to the HTTP client"""
-
-    @abstractmethod
-    def doodles(self) -> Doodles:
-        """Request Doodle data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def field_offices(self) -> FieldOffices:
-        """Request Field Office data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def invasions(self) -> Invasions: 
-        """Request Invasion data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def login(
-        self, 
-        *, 
-        username: Optional[str] = None, 
-        password: Optional[str] = None,
-        app_token: Optional[str] = None,
-        auth_token: Optional[str] = None,
-        queue_token: Optional[str] = None,
-    ) -> Login: 
-        """Request to log into Toontown Rewritten's game server
-
-        Must provide a username and password, a response token, or a queue token
-        
-        Parameters
-        ----------
-        username : Optional[str] = None
-            optional username parameter, must also provide password if given
-
-        password : Optional[str] = None
-            optional password parameter, must also provide username if given
-
-        response_token : Optional[str] = None
-            optional response token parameter, obtained after initial login request with username and password 
-            if you are required to authenticate with ToonGuard
-
-        queue_token : Optional[str] = None
-            optional queue token parameter, obtained after intial login request with username and password or 
-            response token if you are required to wait in the login queue
-        """
-
-    @abstractmethod
-    def population(self) -> Population: 
-        """Request Population data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def silly_meter(self) -> SillyMeter: 
-        """Request Silly Meter data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def news(self, *, id: Optional[int] = None, all: Optional[bool] = False) -> NewsList: 
-        """Request News data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def release_notes(self, *, id: Optional[int] = None) -> ReleaseNotesList:
-        """Request Release Notes data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def status(self) -> Status:
-        """Request Status data from the Toontown Rewritten API"""
-
-    @abstractmethod
-    def update(self, path: Union[str, Path]) -> None:
-        """Updates or creates the Toontown Rewritten files at the given Path"""
+__all__ = ['RewrittenSyncToontownClient', 'RewrittenAsyncToontownClient']
 
 
-class SyncToontownClient(BaseToontownClient):
+class RewrittenSyncToontownClient(BaseSyncToontownClient):
     """Synchronous client to interact with the Toontown Rewritten API"""
 
     def __init__(self, *, session: Optional[requests.Session] = None) -> None:
-        super().__init__(SyncHTTPClient(session=session))
-
-    def connect(self) -> None:
-        self.http.connect()
-
-    def close(self) -> None:
-        self.http.close()
+        super().__init__(RewrittenSyncHTTPClient(session=session))
 
     def status(self) -> Status:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/status'
-        ))
+        )
 
         return Status(**data)
 
@@ -144,10 +55,10 @@ class SyncToontownClient(BaseToontownClient):
         else:
             path = '/releasenotes'
 
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             path
-        ))
+        )
 
         if not isinstance(data, list):
             data = dict(iterable=[data])
@@ -164,10 +75,10 @@ class SyncToontownClient(BaseToontownClient):
         else:
             path = '/news'
 
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             path
-        ))
+        )
 
         if not isinstance(data, list):
             data = dict(iterable=[data])
@@ -177,26 +88,26 @@ class SyncToontownClient(BaseToontownClient):
         return NewsList(**data)
 
     def doodles(self) -> Doodles:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/doodles'
-        ))
+        )
 
         return Doodles(**data)
 
     def field_offices(self) -> FieldOffices:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/fieldoffices'
-        ))
+        )
 
         return FieldOffices(**data)
 
     def invasions(self) -> Invasions:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/invasions'
-        ))
+        )
 
         return Invasions(**data)
 
@@ -222,46 +133,42 @@ class SyncToontownClient(BaseToontownClient):
         else:
             raise Exception('Please provide either a username and password, a queue token, or a auth token and app token to log in')
 
-        data = self.http.request(Route(
+        headers = self.http.HEADERS | {'Content-Type': 'application/x-www-form-urlencoded'}
+
+        data = self.http.request(
             'POST',
             '/login',
+            headers=headers,
             **params
-        ))
+        )
         
         return Login(**data)
 
     def population(self) -> Population:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/population'
-        ))
+        )
 
         return Population(**data)
 
     def silly_meter(self) -> None:
-        data = self.http.request(Route(
+        data = self.http.request(
             'GET',
             '/sillymeter'
-        ))
+        )
 
         return SillyMeter(**data)
 
     def update(self, path: Union[str, Path]) -> None:
         self.http.update(path)
 
-    def __enter__(self):
-        self.connect()
-        return self
 
-    def __exit__(self, *args):
-        self.close()
-
-
-class AsyncToontownClient(BaseToontownClient):
+class RewrittenAsyncToontownClient(BaseAsyncToontownClient):
     """Asynchronous client to interact with the Toontown Rewritten API"""
 
     def __init__(self, *, session: Optional[aiohttp.ClientSession] = None) -> None:
-        super().__init__(AsyncHTTPClient(session=session))
+        super().__init__(RewrittenAsyncHTTPClient(session=session))
 
     async def connect(self) -> None:
         await self.http.connect()
@@ -270,10 +177,10 @@ class AsyncToontownClient(BaseToontownClient):
         await self.http.close()
 
     async def status(self) -> Status:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/status'
-        ))
+        )
 
         return Status(**data)
 
@@ -283,10 +190,10 @@ class AsyncToontownClient(BaseToontownClient):
         else:
             path = '/releasenotes'
 
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             path
-        ))
+        )
 
         if not isinstance(data, list):
             data = dict(iterable=[data])
@@ -303,10 +210,10 @@ class AsyncToontownClient(BaseToontownClient):
         else:
             path = '/news'
 
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             path
-        ))
+        )
 
         if not isinstance(data, list):
             data = dict(iterable=[data])
@@ -316,26 +223,26 @@ class AsyncToontownClient(BaseToontownClient):
         return NewsList(**data)
 
     async def doodles(self) -> Doodles:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/doodles'
-        ))
+        )
 
         return Doodles(**data)
 
     async def field_offices(self) -> FieldOffices:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/fieldoffices'
-        ))
+        )
 
         return FieldOffices(**data)
 
     async def invasions(self) -> Invasions:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/invasions'
-        ))
+        )
 
         return Invasions(**data)
 
@@ -361,36 +268,32 @@ class AsyncToontownClient(BaseToontownClient):
         else:
             raise Exception('Please provide either a username and password, a queue token, or a auth token and app token to log in')
 
-        data = await self.http.request(Route(
+        headers = self.http.HEADERS | {'Content-Type': 'application/x-www-form-urlencoded'}
+
+        data = await self.http.request(
             'POST',
             '/login',
+            headers=headers,
             **params
-        ))
+        )
         
         return Login(**data)
 
     async def population(self) -> Population:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/population'
-        ))
+        )
 
         return Population(**data)
 
     async def silly_meter(self) -> SillyMeter:
-        data = await self.http.request(Route(
+        data = await self.http.request(
             'GET',
             '/sillymeter'
-        ))
+        )
 
         return SillyMeter(**data)
 
     async def update(self, path: Union[str, Path]) -> None:
         await self.http.update(path)
-
-    async def __aenter__(self):
-        await self.connect()
-        return self
-
-    async def __aexit__(self, *args):
-        await self.close()

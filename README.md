@@ -1,5 +1,5 @@
 # toontown.py
-A simple Python API wrapper for the Toontown Rewritten API (https://github.com/ToontownRewritten/api-doc/)
+A simple Python API wrapper for the Toontown Rewritten/Corporate Clash API
 
 ## Features
 - Asynchronous and synchronous
@@ -18,14 +18,23 @@ py -3 -m pip install -U toontown.py
 
 ## About
 
-All methods return a tuple-like wrapper class with all the response data wrapped in objects
+All methods return a tuple-like wrapper class with all the response data wrapped in objects (except Login and Status objects)
 
-e.g. This will print all the current doodles in Toontown Rewritten
+e.g. This will print all the news article URLs for Rewritten and Corporate Clash
 
 ```py
-async with toontown.AsyncToontownClient() as client:
-    doodles = await client.doodles()
+async def main():
+    """Example main function"""
+    session = aiohttp.ClientSession(raise_for_status=True)
 
-    for doodle in doodles:
-        print(doodle.district, doodle.playground, doodle.dna, doodle.rendition, doodle.traits, doodle.cost)
+    async with RewrittenAsyncToontownClient(session=session) as ttr_client, ClashAsyncToontownClient(session=session) as clash_client:
+        news_list = await ttr_client.news(all=True)
+
+        for news in news_list:
+            print(news.article_url)
+
+        news_list = await clash_client.news()
+
+        for news in news_list:
+            print(news.article_url)
 ```

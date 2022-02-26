@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from dataclasses import dataclass
 
-from .base import BaseAPIModel
+from ..base import BaseAPIModel
 
 
 __all__ = ['Doodle', 'Doodles']

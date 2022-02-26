@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from datetime import datetime
 
-from .base import BaseAPIModel
+from ..base import BaseAPIModel
 
 
 __all__ = ['Population', 'District']

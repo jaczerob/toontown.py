@@ -22,28 +22,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
+from typing import ClassVar
 
-import aiohttp
-
-from toontown.client.clash import ClashAsyncToontownClient
-from toontown.client.rewritten import RewrittenAsyncToontownClient
+from .base import BaseAsyncHTTPClient, BaseSyncHTTPClient
 
 
-async def main():
-    """Example main function"""
-    session = aiohttp.ClientSession(raise_for_status=True)
-
-    async with RewrittenAsyncToontownClient(session=session) as ttr_client, ClashAsyncToontownClient(session=session) as clash_client:
-        news_list = await ttr_client.news(all=True)
-
-        for news in news_list:
-            print(news.article_url)
-
-        news_list = await clash_client.news()
-
-        for news in news_list:
-            print(news.article_url)
+__all__ = ['ClashSyncHTTPClient', 'ClashAsyncHTTPClient']
 
 
-asyncio.run(main())
+class ClashSyncHTTPClient(BaseSyncHTTPClient):
+    BASE: ClassVar[str] = 'https://corporateclash.net/api/v1'
+
+
+class ClashAsyncHTTPClient(BaseAsyncHTTPClient):
+    BASE: ClassVar[str] = 'https://corporateclash.net/api/v1'

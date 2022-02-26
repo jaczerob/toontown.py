@@ -22,28 +22,33 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
 
-import aiohttp
-
-from toontown.client.clash import ClashAsyncToontownClient
-from toontown.client.rewritten import RewrittenAsyncToontownClient
+__all__ = ['Login']
 
 
-async def main():
-    """Example main function"""
-    session = aiohttp.ClientSession(raise_for_status=True)
+class Login:
+    """Wrapper class for the /login response
+    
+    Attributes
+    ----------
+    status : bool
+        true if the login was successful
+        
+    reason : int
+        unique number associated with the error when `status` is false
+        
+    friendly_reason : str
+        a user-friendly error/success message. if `status is true, you may show
+        a custom status message
+        
+    token : str
+        the login token that should be used by the game
+    """
 
-    async with RewrittenAsyncToontownClient(session=session) as ttr_client, ClashAsyncToontownClient(session=session) as clash_client:
-        news_list = await ttr_client.news(all=True)
+    __slots__ = ['status', 'reason', 'friendly_reason', 'token']
 
-        for news in news_list:
-            print(news.article_url)
-
-        news_list = await clash_client.news()
-
-        for news in news_list:
-            print(news.article_url)
-
-
-asyncio.run(main())
+    def __init__(self, **payload) -> None:
+        self.status: bool = payload.get('status')
+        self.reason: int = payload.get('reason')
+        self.friendly_reason: str = payload.get('friendlyreason')
+        self.token: str = payload.get('token')

@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from .base import BaseAPIModel
+from ..base import BaseAPIModel
 
 
 __all__ = ['FieldOffice', 'FieldOffices']

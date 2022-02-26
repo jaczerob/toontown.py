@@ -23,12 +23,3 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .base import *
-from .doodles import *
-from .fieldoffices import *
-from .invasions import *
-from .login import *
-from .population import *
-from .sillymeter import *
-from .news import *
-from .releasenotes import *
-from .status import *

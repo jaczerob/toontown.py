@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from .base import BaseAPIModel
+from ..base import BaseAPIModel
 
 
 @dataclass

@@ -27,17 +27,19 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from .base import BaseAPIModel
+from ..base import BaseAPIModel
 
 
 __all__ = ['News', 'NewsList']
 
 
-DATE_FMT = '%B %-d, %Y at %-I:%M %p'
+DATE_FMT = '%B %d, %Y at %I:%M %p'
 
 HTMLELEMENT_CLEANER = re.compile(r'(<.*?>|\r)')
 HTMLENCODE_CLEANER = re.compile(r'&nbsp;')
 NEWLINE_CLEANER = re.compile(r'\n{2,}')
+
+TITLE_CLEANER = re.compile(r'[^A-Za-z\s]')
 
 
 def clean(string: Optional[str]):
@@ -78,6 +80,9 @@ class News:
 
     image : str
         a link to the image of the post
+
+    article_url : str
+        the link to the full article
     """
 
     __slots__ = ['post_id', 'title', 'author', 'body_raw', 'body', 'date', 'image']
@@ -93,6 +98,11 @@ class News:
         self.body_raw: Optional[str] = body_raw
         self.body: Optional[str] = clean(body_raw)
 
+    @property
+    def article_url(self):
+        title = TITLE_CLEANER.sub('', self.title).lower().replace(' ', '-')
+        return f'https://www.toontownrewritten.com/news/item/{self.post_id}/{title}'
+
 
 class NewsList(BaseAPIModel[News]):
     """Wrapper class for the /news response
@@ -100,5 +110,9 @@ class NewsList(BaseAPIModel[News]):
     A tuple-like class containing `News` objects
     """
     def __init__(self, **payload) -> None:
-        iterable = tuple(payload.get('iterable'))
+        iterable = tuple((
+            News(**props)
+            for props in payload['iterable']
+        ))
+        
         super().__init__(iterable)
